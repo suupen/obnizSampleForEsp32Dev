@@ -1,0 +1,75 @@
+<!-- 
+    obnizOS pluginでの webとESP32間でのデータ送受信のサンプルプログラム
+    web側では,
+    "ESP32へのデータ送信"ボタンで、設定した文字列をESP32に送信する
+    ESP32から1byteの数字データを送信する。Webでこの数字を表示する
+
+    ESP32側にはobnizOS pluginをインストールしておく　https://obniz.io/ja/doc/reference/obnizos-for-esp32/plugin/arduino-ide
+   その上でpluginSendAndRecive.inoを書き込む。
+-->
+<!-- esp32Dev側のGPIOの設定  io23: led arduino 1s点滅 -->
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="/css/starter-sample.css" />
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+    <script src="https://unpkg.com/obniz@3.7.0/obniz.js" crossorigin="anonymous"></script>
+</head>
+
+<body>
+    <div id="obniz-debug"></div>
+
+
+        <h3 class="text-center">obnizOS plugin での webとESP32間でのデータ送受信サンプルプログラム</h3>
+        </br>
+        <div>
+            <input type="text" id="text" value="Hello World" placeholder="Input in freely" />
+            <button class="btn btn-primary" id="showtime">ESP32へのデータ送信</button>
+        </div>
+
+
+        </br>
+        <h3 class="text-center">ESP32からのデータ受信</h3>
+        <span id="print">undefined</span>
+
+
+    <script>
+ //       var obniz = new Obniz("xxxx-xxxx");   // 接続するボードの obnizIDを設定すれば、htmlを実行時のobnizID入力が省略できる
+        var obniz = new Obniz("OBNIZ_ID_HERE"); // html実行毎に接続するボードを変えるときのobnizID入力を要求する場合のコード
+
+        //-------------------------------------------------
+        // obniz 接続中の動作
+        //-------------------------------------------------
+        obniz.onconnect = async function () {
+
+            // webの "Print on obnizOS uart"に入力した文字列を出力する
+            $("#showtime").on("click", function () {
+                obniz.plugin.send($("#text").val());
+
+            // 固定値を送信する例
+//            obniz.plugin.send("obniz.js send data get device?")
+//            obniz.plugin.send([0x31, 0x32, 0x33])
+
+            });
+
+            // プラグイン(arduino)からデータを受け取る
+            // arduino側での送信命令 obniz.commandSend((uint8_t*)&counter,1);   "counter"に送信データが入っている
+            // js側命令の説明 https://obniz.io/ja/doc/reference/common/plugin
+            // js-arduino両方の命令の説明 https://obniz.io/ja/doc/reference/obnizos-for-esp32/plugin/custom-communication
+                obniz.plugin.onreceive = data => {
+                    $("#print").text(data);
+//                    console.log(`uart error data : ${data}`);
+                };
+
+
+
+        };
+        
+    </script>
+</body>
+
+</html>
+
+
