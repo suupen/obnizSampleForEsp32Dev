@@ -1,4 +1,5 @@
 /* obnizOs Plugin 動作確認用プログラム 
+ *  ESP32にobnizOS pluginをインストールする手順 https://obniz.io/ja/doc/reference/obnizos-for-esp32/plugin/arduino-ide
  *  module: ESP32Dev 
  *  io23: GPO arduinoProgram動作確認用　led 1s毎に点滅
  *        io23(GPO) --- (anode)LED(cathod) --- R(1kΩ) --- GND
