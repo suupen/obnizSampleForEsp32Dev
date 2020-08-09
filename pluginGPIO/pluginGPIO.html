@@ -1,0 +1,108 @@
+<!-- 
+    obnizOS pluginでの webとESP32間でのデータ送受信のサンプルプログラム
+    web側では,
+    "ESP32へのデータ送信"ボタンで、設定した文字列をESP32に送信する
+    ESP32から1byteの数字データを送信する。Webでこの数字を表示する
+
+    ESP32側にはobnizOS pluginをインストールしておく　https://obniz.io/ja/doc/reference/obnizos-for-esp32/plugin/arduino-ide
+   その上でpluginSendAndRecive.inoを書き込む。
+
+   ESP32 の回路
+   io0 --- anodo(LED)cathod --- R(1kΩ) --- GND       webからの1[s]間隔の点滅
+   io5 --- anodo(LED)cathod --- R(1kΩ) --- GND       webからのボタン操作による点滅
+   io23 --- anodo(LED)cathod --- R(1kΩ) --- GND      ESP32のプログラムによる1[s]間隔の点滅
+
+   io21 --- (SW) --- GND                             webからのポートレベル認識(SW操作認識)
+
+-->
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="/css/starter-sample.css" />
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+    <script src="https://unpkg.com/obniz@3.7.0/obniz.js" crossorigin="anonymous"></script>
+</head>
+
+<body>
+    <div id="obniz-debug"></div>
+
+    <div class="wrap">
+
+        <div class="switch">
+            <h3 class="text-center">obnizOS pluginでのデジタル入出力</h3>
+        </br>
+            <h3 class="text-center">io21 pullup(3.3V) への入力レベル確認</h3>
+            <span id="print">undefined</span>
+        </div>
+
+        <div class="led">
+            <h3 class="text-center">EPS32の io5のLEDの操作</h3>
+            <button class="btn btn-primary" id="on">io5 LED ON</button>
+            <button class="btn btn-outline-primary" id="off">io5 LED OFF</button>
+        </div>
+    </div>
+
+    <script>
+        //--------------------
+        // obnizデバイスとの接続開始
+        //--------------------
+    //       var obniz = new Obniz("xxxx-xxxx");   // 接続するボードの obnizIDを設定すれば、htmlを実行時のobnizID入力が省略できる
+    var obniz = new Obniz("OBNIZ_ID_HERE"); // html実行毎に接続するボードを変えるときのobnizID入力を要求する場合のコード
+        
+        obniz.onconnect = async function () {
+            // 接続中の処理
+
+            //--------------------
+            // ボタン操作によるio5の出力指示
+            // https://obniz.io/ja/doc/reference/common/io/output
+            // obniz.io0.output() の命令は応答しなかった
+            // obniz.getIO().output()の命令は応答した
+            //--------------------
+            $("#on").click(function () {
+//                obniz.io0.output(1);      // この命令では応答しなかった
+                obniz.getIO(5).output(1);
+            });
+
+            $("#off").click(function () {
+//                obniz.io0.output(0);
+                obniz.getIO(5).output(0);
+            });
+
+            //---------------------------
+            // io21への入力変化に対する処理
+            // https://obniz.io/ja/doc/reference/common/io/input
+            // pullupについての説明 https://obniz.io/ja/doc/reference/common/io/drivemethod
+            //---------------------------
+            obniz.io21.pull("3v");
+            obniz.io21.input(function (value) {
+                $("#print").text(value);
+            });
+
+        };
+
+        //--------------------
+        // 1[s]周期で自動実行
+        //--------------------
+        var num1 =0;
+
+        var priod1 = function () {
+            num1++;
+            if (num1 % 2 == 0) {
+                obniz.getIO(0).output(1);
+            }
+            else {
+               obniz.getIO(0).output(0);
+            }
+
+        };
+        
+        setInterval(priod1, 1000);
+
+    </script>
+</body>
+
+</html>
+
+
